@@ -119,10 +119,13 @@ namespace Goon_Log_Realtime_Sorting
 
             }
         }
+
+
+
+
         private void logCheck()
         {
             String toonfile = "null";
-            string filename = "null";
             DirectoryInfo info = new DirectoryInfo(settings.logDir);
             FileInfo[] files = info.GetFiles().OrderByDescending(p => p.CreationTime).ToArray();
             foreach (FileInfo file in files)
@@ -146,36 +149,49 @@ namespace Goon_Log_Realtime_Sorting
                 }
 
             }
+
+            var lineCount = 0;
             while (true)
             {
-                System.Threading.Thread.Sleep(1000);
+                 
                 string lastline = "null";
-                if (lastline == (string)File.ReadLines(toonfile).First())
-                {
-                    Console.WriteLine("no update");
 
-                }
-                else
+                try
                 {
-                    lastline = (string)File.ReadAllText(toonfile);
-                    line = lastline;
-                    Console.WriteLine("update");
-                    Console.WriteLine(line);
-                    try
+                    if (lineCount == File.ReadLines(toonfile).Count())
                     {
-                        this.Invoke((MethodInvoker)delegate
+                        Console.WriteLine("no update wait 10sec");
+                        Thread.Sleep(10000);
+                    }
+                    else
+                    {
+                        int a = (int)lineCount;
+                        string linetoadd = File.ReadLines(toonfile).Skip(a).Take(1).First();
+                        lineCount = a + 1;
+                        lastline = (string)File.ReadAllText(toonfile);
+                        line = lastline;
+                        Console.WriteLine("update");
+                        Console.WriteLine(linetoadd);
+                        try
                         {
-                            string newline = Environment.NewLine;
-                            textBox1.AppendText(line + newline);
-                        });
-                    }
-                    catch (System.InvalidOperationException)
-                    {
-                        isStop = true;
-                        Console.WriteLine("closing threads");
-                        break;
-                    }
+                            this.Invoke((MethodInvoker)delegate
+                            {
+                                string newline = Environment.NewLine;
+                                textBox1.AppendText(linetoadd + newline);
+                            });
+                        }
+                        catch (System.InvalidOperationException)
+                        {
+                            isStop = true;
+                            Console.WriteLine("closing threads");
+                            break;
+                        }
 
+                    }
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("bad log access request");
                 }
             }
         }
