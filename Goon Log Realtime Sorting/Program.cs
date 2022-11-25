@@ -25,8 +25,6 @@ namespace Goon_Log_Realtime_Sorting
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new mainForm());
 
-            
-
 
 
             

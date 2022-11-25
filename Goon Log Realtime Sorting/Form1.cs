@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using Goon_Log_Realtime_Sorting.Properties;
+using System.Threading;
+using System.Reflection.Emit;
 
 namespace Goon_Log_Realtime_Sorting
 {
@@ -16,9 +18,12 @@ namespace Goon_Log_Realtime_Sorting
 
     public partial class mainForm : Form
     {
+        public GLRSettings settings = new GLRSettings();
+        public String tooName = "null";
+        public string line = "null";
+        public bool isStop = false;
         public mainForm()
         {
-            GLRSettings settings = new GLRSettings();
 
             bool autovalue = false;
             InitializeComponent();
@@ -42,7 +47,7 @@ namespace Goon_Log_Realtime_Sorting
                     }
                     if(autovalue == true)
                     {
-                        string tooName = "NULL";
+                        
                         var fileNames = Directory.GetFiles(settings.logDir);
                         foreach (var fileName in fileNames)
                         {   
@@ -71,6 +76,7 @@ namespace Goon_Log_Realtime_Sorting
                             }
                             
                         }
+
                     }
                 }
 
@@ -87,12 +93,96 @@ namespace Goon_Log_Realtime_Sorting
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
+            Thread liveLogCheck = new Thread(logCheck);
             ListBox lb = sender as ListBox;
+            liveLogCheck.Start();
             if (lb != null)
             {
+                tooName =(string) lb.SelectedItem;
+                //if (liveLogCheck.IsAlive)
+                //{
+                    //liveLogCheck.Abort();
+               // }
+                //else
+                //{
+                    
+                    string newline = Environment.NewLine;
+
+                //}
                 Console.WriteLine("selected toon: " + lb.SelectedItem);
                 //ADD HERE METHOD FOR GETTING MOST RECENT LOG EVENTS
+
+
+                
+
+
+
             }
+        }
+        private void logCheck()
+        {
+            String toonfile = "null";
+            string filename = "null";
+            DirectoryInfo info = new DirectoryInfo(settings.logDir);
+            FileInfo[] files = info.GetFiles().OrderByDescending(p => p.CreationTime).ToArray();
+            foreach (FileInfo file in files)
+            {
+                string name = "null";
+                Console.WriteLine("CHECKED: " + file);
+                try
+                {
+                    name = File.ReadLines((string)file.FullName).Skip(2).Take(1).First();
+                }
+                catch (System.InvalidOperationException)
+                {
+                    Console.WriteLine("ERROR: " + file + " too short");
+                }
+
+                if (name.Contains(tooName))
+                {
+                    Console.WriteLine("log for " + tooName + " FOUND in: " + file);
+                    toonfile = file.FullName;
+                    break;
+                }
+
+            }
+            while (true)
+            {
+                System.Threading.Thread.Sleep(1000);
+                string lastline = "null";
+                if (lastline == (string)File.ReadLines(toonfile).First())
+                {
+                    Console.WriteLine("no update");
+
+                }
+                else
+                {
+                    lastline = (string)File.ReadAllText(toonfile);
+                    line = lastline;
+                    Console.WriteLine("update");
+                    Console.WriteLine(line);
+                    try
+                    {
+                        this.Invoke((MethodInvoker)delegate
+                        {
+                            string newline = Environment.NewLine;
+                            textBox1.AppendText(line + newline);
+                        });
+                    }
+                    catch (System.InvalidOperationException)
+                    {
+                        isStop = true;
+                        Console.WriteLine("closing threads");
+                        break;
+                    }
+
+                }
+            }
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
     public class GLRSettings
@@ -101,5 +191,7 @@ namespace Goon_Log_Realtime_Sorting
         public List<string> toons = new List<string>();
 
     }
+
+
 
 }

@@ -85,6 +85,7 @@
             this.Controls.Add(this.label1);
             this.Name = "setup_page";
             this.Text = " ";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.setup_page_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
 
