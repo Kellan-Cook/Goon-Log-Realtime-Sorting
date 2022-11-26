@@ -180,14 +180,15 @@ namespace Goon_Log_Realtime_Sorting
                         {
                             this.Invoke((MethodInvoker)delegate //sends the message to be writen on form1 
                             {
-                                if (linecheck == true)
-                                {
-                                    textBox1.AppendText(linetoadd);
-                                }
-                                else
+                                if (linecheck == false)
                                 {
                                     string newline = Environment.NewLine;
                                     textBox1.AppendText(linetoadd + newline);
+
+                                }
+                                else
+                                {
+                                    textBox1.AppendText(linetoadd);
                                 }
 
                             });
@@ -217,17 +218,18 @@ namespace Goon_Log_Realtime_Sorting
         {
             linecheck = false;
 
-            if (logline.Contains(@"(combat)")) //checks for combat logs
+            if (logline.Contains(@"(combat)" ) || logline.StartsWith("<fontsize=10>") && logline.Contains("Repairer")) //checks for combat logs
             {
 
 
-                if (logline.Substring(0, 15).Contains("<fontsize=10>")) // checks for 2nd line of incoming damage
+                if (logline.StartsWith(@"<fontsize=10>")) // checks for 2nd line of incoming damage
                 {
+                    
                     linecheck = true;
                     logline = logline.Replace("<fontsize=10>", "");
                     logline = logline.Replace("</fontsize><color=0xFFFFFFFF><b> -</b><color=0x77ffffff><font size=10>", "");
                     logline = logline.Replace("</font>", "");
-
+                    return logline;
                 }
                 if (logline.Contains(@"<color=0x77ffffff>")) // checks for outgoing damage
                 {
@@ -235,6 +237,7 @@ namespace Goon_Log_Realtime_Sorting
                     logline = logline.Replace("</b> <color=0x77ffffff><font size=10>to</font> <b><color=0xffffffff>", " ");
                     logline = logline.Replace("</b><font size=10><color=0x77ffffff>", "");
                     logline = logline.Replace("(combat) <color=0xff00ffff><b>", "(combat) ");
+                    return logline;
                 }
                 if (logline.Contains(@"<color=0xffccff66>")) // checks for outgoing reps
                 {
@@ -244,12 +247,14 @@ namespace Goon_Log_Realtime_Sorting
                     logline = logline.Replace("</u></b></color></fontsize><fontsize=12><color=0xFFFEFF6F>", "");
                     logline = logline.Replace("</color></fontsize> <fontsize=10><b>", " ");
                     logline = logline.Replace("</b></fontsize>", "");
+                    return logline;
                 }
-                if (logline.Contains(@"<color=0xffcc0000>")) // check for incoming damage
+                if (logline.Contains(@"<color=0xffcc0000>") && logline.StartsWith("[ 202")) // check for incoming damage
                 {
                     logline = logline.Replace("<color=0xffcc0000><b>", " ");
                     logline = logline.Replace("</b> <color=0x77ffffff><font size=10>from</font> <b><color=0xffffffff>", " ");
                     logline = logline.Replace("</b><font size=10><color=0x77ffffff>", "");
+                    return logline;
                 }
 
 
