@@ -11,6 +11,7 @@ using System.IO;
 using Goon_Log_Realtime_Sorting.Properties;
 using System.Threading;
 using System.Reflection.Emit;
+using System.Xml;
 
 namespace Goon_Log_Realtime_Sorting
 {
@@ -22,6 +23,7 @@ namespace Goon_Log_Realtime_Sorting
         public String tooName = "null";
         public string line = "null";
         public bool isStop = false;
+        public bool linecheck = false;
         public mainForm()
         {
 
@@ -109,6 +111,7 @@ namespace Goon_Log_Realtime_Sorting
                     string newline = Environment.NewLine;
 
                 //}
+                textBox1.Clear();
                 Console.WriteLine("selected toon: " + lb.SelectedItem);
                 //ADD HERE METHOD FOR GETTING MOST RECENT LOG EVENTS
 
@@ -172,12 +175,21 @@ namespace Goon_Log_Realtime_Sorting
                         line = lastline;
                         Console.WriteLine("update");
                         Console.WriteLine(linetoadd);
+                        linetoadd = logprocessing(linetoadd);
                         try
                         {
-                            this.Invoke((MethodInvoker)delegate
+                            this.Invoke((MethodInvoker)delegate //sends the message to be writen on form1 
                             {
-                                string newline = Environment.NewLine;
-                                textBox1.AppendText(linetoadd + newline);
+                                if (linecheck == true)
+                                {
+                                    textBox1.AppendText(linetoadd);
+                                }
+                                else
+                                {
+                                    string newline = Environment.NewLine;
+                                    textBox1.AppendText(linetoadd + newline);
+                                }
+
                             });
                         }
                         catch (System.InvalidOperationException)
@@ -200,7 +212,67 @@ namespace Goon_Log_Realtime_Sorting
         {
 
         }
+
+        public string logprocessing(string logline)
+        {
+            linecheck = false;
+
+            if (logline.Contains(@"(combat)")) //checks for combat logs
+            {
+
+
+                if (logline.Substring(0, 15).Contains("<fontsize=10>")) // checks for 2nd line of incoming damage
+                {
+                    linecheck = true;
+                    logline = logline.Replace("<fontsize=10>", "");
+                    logline = logline.Replace("</fontsize><color=0xFFFFFFFF><b> -</b><color=0x77ffffff><font size=10>", "");
+                    logline = logline.Replace("</font>", "");
+
+                }
+                if (logline.Contains(@"<color=0x77ffffff>")) // checks for outgoing damage
+                {
+
+                    logline = logline.Replace("</b> <color=0x77ffffff><font size=10>to</font> <b><color=0xffffffff>", " ");
+                    logline = logline.Replace("</b><font size=10><color=0x77ffffff>", "");
+                    logline = logline.Replace("(combat) <color=0xff00ffff><b>", "(combat) ");
+                }
+                if (logline.Contains(@"<color=0xffccff66>")) // checks for outgoing reps
+                {
+                    logline = logline.Replace("<color=0xffccff66><b>", "");
+                    logline = logline.Replace("</b><color=0x77ffffff><font size=10>", "");
+                    logline = logline.Replace("</font><b><color=0xffffffff><fontsize=12><color=0xFFFEBB64><b> <u>", "");
+                    logline = logline.Replace("</u></b></color></fontsize><fontsize=12><color=0xFFFEFF6F>", "");
+                    logline = logline.Replace("</color></fontsize> <fontsize=10><b>", " ");
+                    logline = logline.Replace("</b></fontsize>", "");
+                }
+                if (logline.Contains(@"<color=0xffcc0000>")) // check for incoming damage
+                {
+                    logline = logline.Replace("<color=0xffcc0000><b>", " ");
+                    logline = logline.Replace("</b> <color=0x77ffffff><font size=10>from</font> <b><color=0xffffffff>", " ");
+                    logline = logline.Replace("</b><font size=10><color=0x77ffffff>", "");
+                }
+
+
+            }
+
+
+            return logline;
+        }
+
+
+
+
     }
+
+
+
+
+
+
+
+
+
+
     public class GLRSettings
     {
         public string logDir = "null";
