@@ -159,14 +159,14 @@ namespace Goon_Log_Realtime_Sorting
                  
                 string lastline = "null";
 
-                try
+                try //catches if access at same time as eve client
                 {
-                    if (lineCount == File.ReadLines(toonfile).Count())
+                    if (lineCount == File.ReadLines(toonfile).Count()) //checks if file length has changed  waits 10sec if no change
                     {
                         Console.WriteLine("no update wait 10sec");
-                        Thread.Sleep(10000);
+                        Thread.Sleep(10000);  
                     }
-                    else
+                    else //if theire is a change pulls last line not already pulled
                     {
                         int a = (int)lineCount;
                         string linetoadd = File.ReadLines(toonfile).Skip(a).Take(1).First();
@@ -180,7 +180,7 @@ namespace Goon_Log_Realtime_Sorting
                         {
                             this.Invoke((MethodInvoker)delegate //sends the message to be writen on form1 
                             {
-                                if (linecheck == false)
+                                if (linecheck == false)  //creates 
                                 {
                                     string newline = Environment.NewLine;
                                     textBox1.AppendText(linetoadd + newline);
@@ -188,12 +188,12 @@ namespace Goon_Log_Realtime_Sorting
                                 }
                                 else
                                 {
-                                    textBox1.AppendText(linetoadd);
+                                    textBox1.AppendText(linetoadd); //adds line to textbox without creating new line
                                 }
 
                             });
                         }
-                        catch (System.InvalidOperationException)
+                        catch (System.InvalidOperationException) //closes thread if main thread does not exist
                         {
                             isStop = true;
                             Console.WriteLine("closing threads");
@@ -202,7 +202,7 @@ namespace Goon_Log_Realtime_Sorting
 
                     }
                 }
-                catch (Exception)
+                catch (Exception) //skips the check if eve client is using file 
                 {
                     Console.WriteLine("bad log access request");
                 }
