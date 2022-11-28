@@ -26,7 +26,8 @@ namespace Goon_Log_Realtime_Sorting
         public bool linecheck = false;
         public mainForm()
         {
-
+           string a =  Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile);
+           Console.WriteLine("path: " + a);
             bool autovalue = false;
             InitializeComponent();
             if (File.Exists("GLRS_Settings.json"))
@@ -56,7 +57,7 @@ namespace Goon_Log_Realtime_Sorting
                             Console.WriteLine($"{fileName}");
                             try
                             {
-                                tooName = File.ReadLines(fileName).Skip(2).Take(1).First();
+                                tooName = File.ReadLines(fileName).Skip(2).Take(1).First(); //get char names from gamelog files
                             }
                             catch (System.InvalidOperationException)
                             {
